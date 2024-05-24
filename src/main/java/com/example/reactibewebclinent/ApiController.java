@@ -1,6 +1,8 @@
 package com.example.reactibewebclinent;
 
+
 import io.netty.channel.ConnectTimeoutException;
+import io.netty.handler.codec.PrematureChannelClosureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Import;
@@ -10,8 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 import reactor.netty.http.client.PrematureCloseException;
+import reactor.util.retry.Retry;
+
 import java.time.Duration;
 
 @RestController
@@ -33,24 +36,22 @@ public class ApiController {
     @GetMapping("/hello")
     public Mono<String> getHelloFromServer() {
         return webClient.get()
-                .uri("/")
-                .accept(MediaType.TEXT_PLAIN)
+                .uri("/slow-endpoint")
+                .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
                 .bodyToMono(String.class);
-//                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
-//                        .filter(this::retryLogic).doAfterRetry(rs -> {
-//                            if (rs.totalRetries() >= 3) {
-//                                System.out.println("Retries exhausted!");
-//                            }
-//                        }));
     }
 
     @GetMapping("/")
-    public Flux<String> index() {
-        return Flux.just("Hello World!", "wold");
+    public Mono<String> index() {
+        //return Flux.just("Hello World!", "wold");
+        return Mono.just("Hello World");
         //return Mono.error(new RuntimeException("An error occurred!"));
+        //return Mono.error(new InterruptedException());
+
         //return Mono.error(new RuntimeException("Something went wrong!"));
         //return Mono.error(new ConnectTimeoutException("Connection timed out"));
-
+        //return Mono.error(new PrematureChannelClosureException());
+        //return Mono.error(new ArithmeticException());
     }
 }
